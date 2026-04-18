@@ -1,28 +1,28 @@
 "use client";
 
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
-import { Sparkles, Truck, ShieldCheck, Clock } from "lucide-react";
+import { Sparkles, Gem, TrendingUp, Stars } from "lucide-react";
 
 const features = [
   {
     icon: Sparkles,
-    title: "Premium Quality",
-    description: "Only authentic designer fabrics from trusted brands",
+    title: "Curated Picks",
+    description: "We handpick products that are aesthetic and high demand.",
   },
   {
-    icon: Truck,
-    title: "Fast Delivery",
-    description: "Quick and reliable shipping across Pakistan",
+    icon: Gem,
+    title: "Luxury Feel",
+    description: "Minimal premium presentation with quality-forward choices.",
   },
   {
-    icon: ShieldCheck,
-    title: "Genuine Products",
-    description: "100% original designer lawn collections",
+    icon: TrendingUp,
+    title: "Trend Driven",
+    description: "We source by social buzz so you get what is rising first.",
   },
   {
-    icon: Clock,
-    title: "24/7 Support",
-    description: "Always here to help with your orders",
+    icon: Stars,
+    title: "Instagram Shopping",
+    description: "Fast DM-first ordering built for modern lifestyle buyers.",
   },
 ];
 
@@ -42,16 +42,14 @@ export function About() {
               : "opacity-0 translate-y-8"
           }`}
         >
-          <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground mb-3">
-            Why Choose Us
-          </p>
           <h2 className="font-serif text-4xl md:text-5xl font-semibold text-foreground mb-6">
             About Lumetrends
           </h2>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            We bring you the latest Pakistani designer lawn collections
-            including Maria B and other top brands. Premium quality unstitched
-            suits, trendy designs, and affordable prices - all in one place.
+            We curate viral, aesthetic, and high-demand products so you never
+            miss what&apos;s trending. Every item is handpicked for style,
+            quality, and social buzz, giving you a premium lifestyle shopping
+            experience without the hunt.
           </p>
         </div>
 

@@ -15,8 +15,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Lumetrends | Luxury Pakistani Lawn Collection 2026',
-  description: 'Discover premium Pakistani designer lawn collections featuring Maria B and top brands. Unstitched suits, trendy designs, and affordable prices.',
+  title: "Lumetrends | Discover Viral Finds Before They Blow Up",
+  description:
+    "Curated aesthetic products, trending fashion, and must-have lifestyle finds. Shop premium viral picks via Lumetrends Instagram DM.",
   generator: 'v0.app',
   icons: {
     icon: [

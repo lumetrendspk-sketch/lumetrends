@@ -3,93 +3,29 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Instagram } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 
-const products = [
-  {
-    id: 1,
-    name: "Purple Floral Print",
-    category: "Maria B Lawn 3pc",
-    price: "PKR 5,500",
-    image:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-04-13%20at%209.43.28%20PM-9EFSKlA5Fx25UWfEOHbUQFnl5GOnxA.jpeg",
-  },
-  {
-    id: 2,
-    name: "Magenta Bandhani",
-    category: "Maria B Lawn 3pc",
-    price: "PKR 5,500",
-    image:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-04-13%20at%209.43.27%20PM-mAMYg4yvUcIoF6Ej8aH9WNSnxbYcMi.jpeg",
-  },
-  {
-    id: 3,
-    name: "Beige Floral Garden",
-    category: "Maria B Lawn 3pc",
-    price: "PKR 5,500",
-    image:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-04-13%20at%209.43.26%20PM-mOLmAEwPuOoPFgaj5QtJiMASQe5CHK.jpeg",
-  },
-  {
-    id: 4,
-    name: "Pink Blossom",
-    category: "Maria B Lawn 3pc",
-    price: "PKR 5,500",
-    image:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-04-13%20at%209.43.29%20PM-t5Wkicwfeh3TdNVqr2eNV2I4Ow7ove.jpeg",
-  },
-  {
-    id: 5,
-    name: "Purple Embroidered",
-    category: "Maria B Unstitched",
-    price: "PKR 3,000",
-    image: "/maria-b-purple-embroidered.png",
-  },
-  {
-    id: 6,
-    name: "Red Royal Embroidered",
-    category: "Premium Collection",
-    price: "PKR 3,000",
-    image:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-04-14%20at%2010.02.32%20PM-FvAWn0JZCRfuWuM31Yw48YQnFLGCxk.jpeg",
-  },
-  {
-    id: 7,
-    name: "Teal Tropical Paradise",
-    category: "Designer Lawn",
-    price: "PKR 5,800",
-    image:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-04-14%20at%209.58.52%20PM-MCi3t4tmIIm3vYacqBLDYJhBPJigtE.jpeg",
-  },
-  {
-    id: 8,
-    name: "Black Floral Art",
-    category: "Designer Collection",
-    price: "PKR 5,500",
-    image:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-04-14%20at%2011.25.40%20PM-RUS3iOga3471CkZmwjpktR7Uxki52E.jpeg",
-  },
-  {
-    id: 9,
-    name: "Black Embroidered",
-    category: "Maria B Unstitched",
-    price: "PKR 3,000",
-    image: "/maria-b-black-embroidered.png",
-  },
-  {
-    id: 10,
-    name: "Blue Embroidered",
-    category: "Maria B Unstitched",
-    price: "PKR 3,000",
-    image: "/maria-b-blue-embroidered.png",
-  },
-];
+type SheetProduct = {
+  "brand name": string;
+  imageurl: string;
+  "dress price": string;
+  "dress detail": string;
+};
+
+type Product = {
+  id: number;
+  brand: string;
+  description: string;
+  price: string;
+  image: string;
+};
 
 function ProductCard({
   product,
   index,
 }: {
-  product: (typeof products)[0];
+  product: Product;
   index: number;
 }) {
   const { ref, isVisible } = useScrollAnimation<HTMLDivElement>({
@@ -104,35 +40,36 @@ function ProductCard({
       }`}
       style={{ transitionDelay: `${index * 150}ms` }}
     >
-      <div className="relative aspect-[4/5] overflow-hidden bg-muted mb-4">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-muted mb-4 border border-border/50 shadow-lg shadow-black/5">
         <Image
           src={product.image}
-          alt={product.name}
+          alt={product.brand}
           fill
+          loading="lazy"
           className="object-cover transition-all duration-700 group-hover:scale-110"
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          unoptimized
         />
-        <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/20 transition-all duration-500" />
+        <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/30 transition-all duration-500" />
+      </div>
 
-        {/* Quick Order Button */}
+      <div className="space-y-3">
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+          {product.brand}
+        </p>
+        <p className="line-clamp-3 text-xs md:text-sm text-muted-foreground">
+          {product.description}
+        </p>
+        <p className="text-lg font-bold text-foreground">{product.price}</p>
         <Link
           href="https://www.instagram.com/lumetrends?igsh=amhscmNzYWo5YXRo"
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute bottom-4 left-4 right-4 flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 text-sm font-medium opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500"
+          className="inline-flex items-center gap-2 text-sm font-medium text-primary transition-colors duration-300 hover:text-accent"
         >
           <Instagram className="w-4 h-4" />
-          Order Now
+          DM Us
         </Link>
-      </div>
-
-      <div className="space-y-1">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
-          {product.category}
-        </p>
-        <h3 className="font-serif text-lg font-medium text-foreground group-hover:text-accent transition-colors duration-300">
-          {product.name}
-        </h3>
-        <p className="text-sm font-medium text-foreground">{product.price}</p>
       </div>
     </div>
   );
@@ -141,11 +78,51 @@ function ProductCard({
 export function Collection() {
   const { ref: headerRef, isVisible: headerVisible } =
     useScrollAnimation<HTMLDivElement>();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const response = await fetch("/products.json");
+        const data: SheetProduct[] = await response.json();
+        const mapped = data
+          .filter((item) => item.imageurl && item["brand name"])
+          .map((item, index) => ({
+            id: index + 1,
+            brand: item["brand name"].trim(),
+            description:
+              item["dress detail"]?.trim() ||
+              "Curated trending style from our premium collection.",
+            price: `PKR ${item["dress price"]}`,
+            image: item.imageurl.trim(),
+          }));
+        setProducts(mapped);
+      } catch (error) {
+        console.error("Failed to load product sheet", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, []);
+
+  const productsByBrand = useMemo(() => {
+    const grouped = new Map<string, Product[]>();
+    products.forEach((product) => {
+      const existing = grouped.get(product.brand) ?? [];
+      if (existing.length < 4) {
+        existing.push(product);
+        grouped.set(product.brand, existing);
+      }
+    });
+    return Array.from(grouped.entries());
+  }, [products]);
 
   return (
-    <section id="collection" className="py-24 md:py-32 bg-secondary/30">
+    <section id="collection" className="py-24 md:py-32 bg-secondary/20">
       <div className="container mx-auto px-6">
-        {/* Section Header */}
         <div
           ref={headerRef}
           className={`text-center max-w-2xl mx-auto mb-16 transition-all duration-700 ${
@@ -157,23 +134,40 @@ export function Collection() {
           <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground mb-3">
             New Arrivals
           </p>
-          <h2 className="font-serif text-4xl md:text-5xl font-semibold text-foreground mb-4">
-            Latest Collection
+          <h2 className="text-4xl md:text-5xl font-semibold text-foreground mb-4">
+            Collection by Brand
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            Explore our curated selection of premium Pakistani designer lawn
-            suits, featuring exquisite embroidery and timeless elegance.
+            Minimal, curated picks grouped by brand for a cleaner shopping
+            experience.
           </p>
         </div>
 
-        {/* Products Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
-          {products.map((product, index) => (
-            <ProductCard key={product.id} product={product} index={index} />
-          ))}
-        </div>
+        {loading ? (
+          <p className="text-center text-muted-foreground">
+            Loading collection...
+          </p>
+        ) : (
+          <div className="space-y-14">
+            {productsByBrand.map(([brand, brandProducts]) => (
+              <section key={brand}>
+                <h3 className="mb-6 text-2xl font-semibold text-foreground">
+                  {brand}
+                </h3>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+                  {brandProducts.map((product, index) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      index={index}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        )}
 
-        {/* View More Button */}
         <div className="text-center mt-16">
           <Link
             href="https://www.instagram.com/lumetrends?igsh=amhscmNzYWo5YXRo"
@@ -181,10 +175,7 @@ export function Collection() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 border-b-2 border-primary text-primary pb-1 text-sm font-medium tracking-wide transition-all duration-300 hover:border-accent hover:text-accent hover:gap-4"
           >
-            View More Designs
-            <span className="transition-transform duration-300 group-hover:translate-x-2">
-              →
-            </span>
+            Explore all drops on Instagram →
           </Link>
         </div>
       </div>

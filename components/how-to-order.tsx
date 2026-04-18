@@ -8,20 +8,22 @@ const steps = [
   {
     icon: Search,
     number: "01",
-    title: "Explore",
-    description: "Scroll through our collection and find your favorite outfits",
+    title: "Explore Collection",
+    description:
+      "Browse our newest viral finds and pick the product you want.",
   },
   {
     icon: Camera,
     number: "02",
-    title: "Screenshot",
-    description: "Take a screenshot of the design you love",
+    title: "Take Screenshot of Product",
+    description: "Save a screenshot of the product card you want to order.",
   },
   {
     icon: Send,
     number: "03",
-    title: "Order",
-    description: "Send the picture via DM and place your order",
+    title: "DM us on Instagram to place order",
+    description:
+      "Send your screenshot in DM and we will confirm details quickly.",
   },
 ];
 
@@ -91,15 +93,11 @@ export function HowToOrder() {
               : "opacity-0 translate-y-8"
           }`}
         >
-          <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground mb-3">
-            Simple Process
-          </p>
           <h2 className="font-serif text-4xl md:text-5xl font-semibold text-foreground mb-4">
             How to Order
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            Ordering your favorite outfit is simple. Just follow these three
-            easy steps.
+            A clean 3-step ordering flow made for Instagram-first shopping.
           </p>
         </div>
 
@@ -130,7 +128,7 @@ export function HowToOrder() {
               className="group inline-flex items-center gap-3 bg-primary text-primary-foreground px-10 py-4 text-sm font-medium tracking-wide transition-all duration-300 hover:bg-accent hover:scale-105 hover:shadow-lg"
             >
               <Instagram className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
-              DM to Order Now
+              DM Us Now
             </Link>
           </div>
         </div>

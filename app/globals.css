@@ -120,7 +120,11 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-background text-foreground;
+    background: linear-gradient(180deg, rgba(250, 248, 244, 1) 0%, rgba(242, 239, 234, 1) 100%);
   }
 }
