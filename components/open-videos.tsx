@@ -9,6 +9,8 @@ const videoUrls = [
   "https://player.cloudinary.com/embed/?cloud_name=dxpflbirm&public_id=WhatsApp_Video_2026-04-18_at_4.54.49_PM_hg2v97",
   "https://player.cloudinary.com/embed/?cloud_name=dxpflbirm&public_id=WhatsApp_Video_2026-04-18_at_4.59.08_PM_tzbpcs",
   "https://player.cloudinary.com/embed/?cloud_name=dxpflbirm&public_id=WhatsApp_Video_2026-04-18_at_4.59.26_PM_klbwjv",
+  "https://player.cloudinary.com/embed/?cloud_name=dxpflbirm&public_id=WhatsApp_Video_2026-04-20_at_4.39.09_PM_2_mveg4d",
+  "https://player.cloudinary.com/embed/?cloud_name=dxpflbirm&public_id=WhatsApp_Video_2026-04-20_at_4.39.09_PM_4_vy90ft",
 ];
 
 export function OpenVideos() {

@@ -80,6 +80,9 @@ export function Collection() {
     useScrollAnimation<HTMLDivElement>();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedBrands, setExpandedBrands] = useState<Record<string, boolean>>(
+    {}
+  );
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -112,10 +115,8 @@ export function Collection() {
     const grouped = new Map<string, Product[]>();
     products.forEach((product) => {
       const existing = grouped.get(product.brand) ?? [];
-      if (existing.length < 4) {
-        existing.push(product);
-        grouped.set(product.brand, existing);
-      }
+      existing.push(product);
+      grouped.set(product.brand, existing);
     });
     return Array.from(grouped.entries());
   }, [products]);
@@ -151,11 +152,32 @@ export function Collection() {
           <div className="space-y-14">
             {productsByBrand.map(([brand, brandProducts]) => (
               <section key={brand}>
-                <h3 className="mb-6 text-2xl font-semibold text-foreground">
-                  {brand}
-                </h3>
+                <div className="mb-6 flex items-end justify-between gap-4">
+                  <h3 className="text-2xl font-semibold text-foreground">
+                    {brand}
+                  </h3>
+                  {brandProducts.length > 4 && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExpandedBrands((prev) => ({
+                          ...prev,
+                          [brand]: !prev[brand],
+                        }))
+                      }
+                      className="text-sm font-semibold text-primary transition-colors hover:text-accent"
+                    >
+                      {expandedBrands[brand]
+                        ? "Show less"
+                        : `View all (${brandProducts.length})`}
+                    </button>
+                  )}
+                </div>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
-                  {brandProducts.map((product, index) => (
+                  {(expandedBrands[brand]
+                    ? brandProducts
+                    : brandProducts.slice(0, 4)
+                  ).map((product, index) => (
                     <ProductCard
                       key={product.id}
                       product={product}
