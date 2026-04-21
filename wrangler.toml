@@ -1,0 +1,13 @@
+name = "lumetrends"
+compatibility_date = "2026-04-21"
+
+# OpenNext builds a Workers entrypoint at .open-next/worker.js
+main = ".open-next/worker.js"
+
+# Static assets emitted by OpenNext
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+[build]
+command = "npm run build"
