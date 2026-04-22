@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NutriCheck AI – Smart Grocery Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg-base: #0a0a0f;
+  --bg-card: rgba(18, 18, 28, 0.85);
+  --bg-card2: rgba(22, 22, 36, 0.9);
+  --bg-sidebar: rgba(12, 12, 20, 0.95);
+  --border: rgba(255,255,255,0.07);
+  --border-gold: rgba(212, 175, 55, 0.3);
+  --gold1: #d4af37;
+  --gold2: #f5d060;
+  --gold3: #b8960c;
+  --text-primary: #f0ede6;
+  --text-secondary: #9b9894;
+  --text-muted: #5a5856;
+  --green: #34d399;
+  --green-bg: rgba(52,211,153,0.12);
+  --red: #f87171;
+  --red-bg: rgba(248,113,113,0.12);
+  --blue: #60a5fa;
+  --blue-bg: rgba(96,165,250,0.12);
+  --amber: #fbbf24;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --shadow-card: 0 8px 40px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-gold: 0 0 30px rgba(212,175,55,0.15);
+  --font-display: 'Montserrat', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; -webkit-font-smoothing: antialiased; }
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  display: flex;
+  overflow-x: hidden;
+}
+/* Ambient background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 10% 20%, rgba(212,175,55,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 90% 80%, rgba(96,165,250,0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(52,211,153,0.03) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+/* ─── SIDEBAR ─────────────────────────────────────────── */
+.sidebar {
+  width: 260px;
+  min-height: 100vh;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  z-index: 100;
+  padding: 0;
+  backdrop-filter: blur(20px);
+}
+.sidebar-logo {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.logo-mark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-icon {
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg, var(--gold1), var(--gold2));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 0 20px rgba(212,175,55,0.3);
+}
+.logo-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.3px;
+  background: linear-gradient(135deg, var(--gold2), var(--gold1));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.logo-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-top: 1px;
+  letter-spacing: 0.5px;
+}
+.sidebar-nav {
+  padding: 16px 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.nav-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  padding: 12px 12px 6px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+.nav-item:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+.nav-item.active {
+  background: rgba(212,175,55,0.1);
+  border-color: var(--border-gold);
+  color: var(--gold2);
+}
+.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid var(--border);
+}
+.plan-badge {
+  background: rgba(212,175,55,0.08);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.plan-label { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
+.plan-name {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold1);
+  letter-spacing: 0.5px;
+}
+.plan-upgrade {
+  font-size: 10px;
+  color: var(--gold2);
+  cursor: pointer;
+  padding: 4px 8px;
+  border: 1px solid var(--border-gold);
+  border-radius: 6px;
+  background: transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.plan-upgrade:hover { background: rgba(212,175,55,0.1); }
+/* ─── MAIN ─────────────────────────────────────────────── */
+.main-content {
+  margin-left: 260px;
+  flex: 1;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+/* ─── HEADER ────────────────────────────────────────────── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(10,10,15,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.header-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.header-sub { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.scan-counter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(212,175,55,0.08);
+  border: 1px solid var(--border-gold);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--gold2);
+  font-weight: 600;
+}
+.scan-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+}
+.scan-dot.used { background: var(--red); box-shadow: 0 0 6px var(--red); }
+.avatar {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--gold1), var(--gold3));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: #0a0a0f;
+}
+/* ─── PAGE BODY ─────────────────────────────────────────── */
+.page { padding: 32px; }
+/* ─── CARDS ─────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+.card-gold-glow {
+  box-shadow: var(--shadow-card), var(--shadow-gold);
+  border-color: var(--border-gold);
+}
+.card-header {
+  padding: 20px 24px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.3px;
+}
+.card-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.card-body { padding: 20px 24px 24px; }
+/* ─── GRID ───────────────────────────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.col-span-2 { grid-column: span 2; }
+/* ─── SCAN CARD ─────────────────────────────────────────── */
+.scan-card-inner { padding: 32px 24px; }
+.scan-zone {
+  border: 2px dashed rgba(212,175,55,0.25);
+  border-radius: var(--radius-md);
+  padding: 40px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: rgba(212,175,55,0.02);
+  position: relative;
+}
+.scan-zone:hover {
+  border-color: rgba(212,175,55,0.5);
+  background: rgba(212,175,55,0.05);
+}
+.scan-zone.dragging {
+  border-color: var(--gold1);
+  background: rgba(212,175,55,0.08);
+}
+.scan-icon { font-size: 48px; margin-bottom: 14px; filter: drop-shadow(0 0 12px rgba(212,175,55,0.4)); }
+.scan-text {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.scan-hint { font-size: 12px; color: var(--text-muted); }
+.scan-buttons { display: flex; gap: 12px; margin-top: 20px; justify-content: center; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-display);
+  cursor: pointer;
+  border: none;
+  transition: all 0.25s;
+  letter-spacing: 0.3px;
+}
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold3), var(--gold1), var(--gold2));
+  color: #0a0a0f;
+  box-shadow: 0 4px 20px rgba(212,175,55,0.3);
+}
+.btn-gold:hover { transform: translateY(-1px); box-shadow: 0 6px 25px rgba(212,175,55,0.45); }
+.btn-ghost {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.15); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+/* ─── STAT CHIPS ─────────────────────────────────────────── */
+.stat-chip {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  transition: all 0.2s;
+}
+.stat-chip:hover { border-color: rgba(255,255,255,0.12); transform: translateY(-1px); }
+.stat-chip-label { font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+.stat-chip-value { font-family: var(--font-display); font-size: 26px; font-weight: 800; color: var(--text-primary); line-height: 1; }
+.stat-chip-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.stat-chip.green { border-color: rgba(52,211,153,0.2); }
+.stat-chip.green .stat-chip-value { color: var(--green); }
+.stat-chip.red { border-color: rgba(248,113,113,0.2); }
+.stat-chip.red .stat-chip-value { color: var(--red); }
+.stat-chip.gold { border-color: var(--border-gold); }
+.stat-chip.gold .stat-chip-value { color: var(--gold2); }
+/* ─── ITEM LIST ──────────────────────────────────────────── */
+.item-list { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
+.item-list::-webkit-scrollbar { width: 4px; }
+.item-list::-webkit-scrollbar-track { background: transparent; }
+.item-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: all 0.2s;
+  animation: slideIn 0.3s ease;
+}
+.item-row:hover { background: rgba(255,255,255,0.05); }
+@keyframes slideIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: translateY(0); } }
+.item-badge {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.item-badge.healthy { background: var(--green); box-shadow: 0 0 6px rgba(52,211,153,0.6); }
+.item-badge.processed { background: var(--red); box-shadow: 0 0 6px rgba(248,113,113,0.6); }
+.item-badge.non-food { background: var(--blue); box-shadow: 0 0 6px rgba(96,165,250,0.4); }
+.item-name { flex: 1; font-size: 13px; font-weight: 500; color: var(--text-primary); }
+.item-qty { font-size: 12px; color: var(--text-muted); }
+.item-price { font-size: 13px; font-weight: 600; color: var(--gold2); min-width: 70px; text-align: right; }
+.item-tag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.item-tag.healthy { background: var(--green-bg); color: var(--green); }
+.item-tag.processed { background: var(--red-bg); color: var(--red); }
+.item-tag.non-food { background: var(--blue-bg); color: var(--blue); }
+/* ─── EMPTY STATE ────────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 56px 24px;
+}
+.empty-icon { font-size: 52px; margin-bottom: 16px; opacity: 0.5; }
+.empty-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.empty-sub { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+/* ─── HEALTH RING ────────────────────────────────────────── */
+.health-ring-wrap {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.ring-canvas-wrap { position: relative; flex-shrink: 0; }
+.ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.ring-score {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.ring-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; letter-spacing: 0.4px; }
+.ring-legend { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.legend-item { display: flex; align-items: center; gap: 10px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.legend-text { flex: 1; font-size: 13px; color: var(--text-secondary); }
+.legend-count {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+}
+/* ─── PROGRESS BAR ────────────────────────────────────────── */
+.progress-wrap { margin-top: 16px; }
+.progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+.progress-track {
+  height: 6px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s cubic-bezier(0.16,1,0.3,1);
+}
+/* ─── SPEND CARD ─────────────────────────────────────────── */
+.spend-total {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -1px;
+  margin-bottom: 4px;
+}
+.spend-currency { font-size: 18px; color: var(--gold1); margin-right: 2px; vertical-align: super; }
+.spend-trend { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
+.trend-pill {
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.trend-pill.up { background: var(--red-bg); color: var(--red); }
+.trend-pill.down { background: var(--green-bg); color: var(--green); }
+/* ─── LOADING ─────────────────────────────────────────────── */
+.loader-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,10,15,0.85);
+  backdrop-filter: blur(8px);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.loader-overlay.visible { opacity: 1; pointer-events: all; }
+.loader-ring {
+  width: 56px; height: 56px;
+  border: 3px solid rgba(212,175,55,0.15);
+  border-top-color: var(--gold1);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-text {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gold2);
+  letter-spacing: 0.5px;
+}
+.loader-sub { font-size: 12px; color: var(--text-muted); }
+/* ─── ERROR BANNER ────────────────────────────────────────── */
+.error-banner {
+  background: rgba(248,113,113,0.08);
+  border: 1px solid rgba(248,113,113,0.25);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+  animation: slideIn 0.3s ease;
+  display: none;
+}
+.error-banner.visible { display: flex; }
+.error-icon { font-size: 18px; }
+.error-text { flex: 1; }
+.error-title { font-size: 13px; font-weight: 700; color: var(--red); margin-bottom: 3px; }
+.error-sub { font-size: 12px; color: rgba(248,113,113,0.7); line-height: 1.5; }
+/* ─── PREMIUM MODAL ───────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5,5,10,0.88);
+  backdrop-filter: blur(16px);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s;
+}
+.modal-backdrop.visible { opacity: 1; pointer-events: all; }
+.modal {
+  background: linear-gradient(145deg, #13111f, #0f0e1a);
+  border: 1px solid rgba(212,175,55,0.3);
+  border-radius: 28px;
+  width: 460px;
+  max-width: 90vw;
+  padding: 0;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 60px rgba(212,175,55,0.1);
+  transform: scale(0.92) translateY(20px);
+  transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+  overflow: hidden;
+}
+.modal-backdrop.visible .modal { transform: scale(1) translateY(0); }
+.modal-top {
+  padding: 40px 40px 28px;
+  text-align: center;
+  position: relative;
+}
+.modal-crown {
+  font-size: 52px;
+  margin-bottom: 18px;
+  filter: drop-shadow(0 0 20px rgba(212,175,55,0.6));
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--gold2), var(--gold1), var(--gold3));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+.modal-msg { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+.modal-price-block {
+  background: rgba(212,175,55,0.06);
+  border-top: 1px solid rgba(212,175,55,0.15);
+  border-bottom: 1px solid rgba(212,175,55,0.15);
+  padding: 20px 40px;
+  text-align: center;
+}
+.modal-price-label { font-size: 12px; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 4px; }
+.modal-price {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--gold2);
+}
+.modal-price-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+.modal-bottom { padding: 24px 40px 36px; text-align: center; }
+.modal-features { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+.modal-feat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.feat-check { color: var(--green); font-size: 14px; }
+.btn-premium {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 15px 24px;
+  border-radius: 14px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--gold3) 0%, var(--gold1) 40%, var(--gold2) 100%);
+  color: #0a0a0f;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 0.4px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 6px 30px rgba(212,175,55,0.4);
+  animation: pulse-gold 2.5s ease-in-out infinite;
+  transition: all 0.25s;
+  text-decoration: none;
+}
+@keyframes pulse-gold {
+  0%,100% { box-shadow: 0 6px 30px rgba(212,175,55,0.4); }
+  50% { box-shadow: 0 8px 40px rgba(212,175,55,0.65), 0 0 0 6px rgba(212,175,55,0.1); }
+}
+.btn-premium:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(212,175,55,0.6); }
+.btn-premium::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: rgba(255,255,255,0.25);
+  transform: rotate(30deg);
+  animation: shimmer 3s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0%,100% { left: -60%; opacity:0; }
+  40% { opacity:1; }
+  60% { left: 120%; opacity:0; }
+}
+.modal-dismiss {
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.modal-dismiss:hover { color: var(--text-secondary); }
+/* ─── PREVIEW IMAGE ──────────────────────────────────────── */
+#preview-container {
+  display: none;
+  margin-top: 16px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+#preview-img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  display: block;
+}
+/* ─── SUCCESS BANNER ─────────────────────────────────────── */
+.success-banner {
+  background: rgba(52,211,153,0.08);
+  border: 1px solid rgba(52,211,153,0.2);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+  display: none;
+  animation: slideIn 0.3s ease;
+}
+.success-banner.visible { display: flex; }
+/* ─── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 900px) {
+  .sidebar { width: 220px; }
+  .main-content { margin-left: 220px; }
+  .grid-2 { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .sidebar { display: none; }
+  .main-content { margin-left: 0; }
+  .page { padding: 16px; }
+  .header { padding: 12px 16px; }
+}
+/* ─── SECTION SPACING ────────────────────────────────────── */
+.section { margin-bottom: 28px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.section-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.section-action {
+  font-size: 12px;
+  color: var(--gold1);
+  cursor: pointer;
+  opacity: 0.7;
+}
+.section-action:hover { opacity: 1; }
+/* ─── CHART AREA ─────────────────────────────────────────── */
+.chart-container { position: relative; height: 160px; }
+/* ─── DEMO BUTTON ────────────────────────────────────────── */
+.demo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: transparent;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+}
+.demo-btn:hover { border-color: var(--border-gold); color: var(--gold2); }
+/* ─── TOOLTIP ────────────────────────────────────────────── */
+[data-tip] {
+  position: relative;
+  cursor: help;
+}
+/* ─── DIVIDER ────────────────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 20px 0;
+}
+/* ─── SCAN HISTORY CHIP ──────────────────────────────────── */
+.history-chip {
+  background: rgba(212,175,55,0.06);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.history-chip-icon { font-size: 16px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">🥗</div>
+      <div>
+        <div class="logo-text">NutriCheck AI</div>
+        <div class="logo-sub">Smart Grocery Tracker</div>
+      </div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a class="nav-item active" onclick="setPage('dashboard')">
+      <span class="nav-icon">⚡</span> Dashboard
+    </a>
+    <a class="nav-item" onclick="setPage('scan')">
+      <span class="nav-icon">📷</span> Scan Receipt
+    </a>
+    <a class="nav-item" onclick="setPage('history')">
+      <span class="nav-icon">📋</span> History
+    </a>
+    <div class="nav-section-label">Insights</div>
+    <a class="nav-item" onclick="setPage('health')">
+      <span class="nav-icon">💚</span> Health Score
+    </a>
+    <a class="nav-item" onclick="setPage('spend')">
+      <span class="nav-icon">💰</span> Monthly Spend
+    </a>
+    <div class="nav-section-label">Account</div>
+    <a class="nav-item" onclick="openPremiumModal()">
+      <span class="nav-icon">👑</span> Upgrade Plan
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="plan-badge">
+      <div>
+        <div class="plan-label">Current Plan</div>
+        <div class="plan-name">FREE TIER</div>
+      </div>
+      <button class="plan-upgrade" onclick="openPremiumModal()">Upgrade</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-content">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div>
+      <div class="header-title">Good morning 👋</div>
+      <div class="header-sub">Here's your nutrition overview</div>
+    </div>
+    <div class="header-right">
+      <div class="scan-counter">
+        <div class="scan-dot" id="scan-dot"></div>
+        <span id="scan-counter-text">1 scan available</span>
+      </div>
+      <div class="avatar">AZ</div>
+    </div>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <div class="page" id="main-page">
+
+    <!-- ERROR BANNER -->
+    <div class="error-banner" id="error-banner">
+      <div class="error-icon">⚠️</div>
+      <div class="error-text">
+        <div class="error-title">Invalid Document</div>
+        <div class="error-sub" id="error-msg">Please upload a grocery or food-related receipt to get health insights.</div>
+      </div>
+    </div>
+
+    <!-- SUCCESS BANNER -->
+    <div class="success-banner" id="success-banner">
+      <div style="font-size:18px">✅</div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:3px">Receipt Analysed Successfully</div>
+        <div style="font-size:12px;color:rgba(52,211,153,0.7)" id="success-msg">Items extracted and classified.</div>
+      </div>
+    </div>
+
+    <!-- SCAN SECTION -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">📷 AI Receipt Scanner</div>
+        <button class="demo-btn" onclick="runDemo()">✨ Try Demo Scan</button>
+      </div>
+      <div class="card card-gold-glow">
+        <div class="scan-card-inner">
+          <div class="scan-zone" id="drop-zone" onclick="triggerFileInput()" ondragover="handleDrag(event,true)" ondragleave="handleDrag(event,false)" ondrop="handleDrop(event)">
+            <div class="scan-icon">🧾</div>
+            <div class="scan-text">Drop your grocery receipt here</div>
+            <div class="scan-hint">Accepts photos, scans, and mixed receipts</div>
+          </div>
+          <div id="preview-container">
+            <img id="preview-img" src="" alt="Receipt preview"/>
+          </div>
+          <div class="scan-buttons">
+            <button class="btn btn-gold" onclick="triggerCamera()">
+              📸 Scan with Camera
+            </button>
+            <button class="btn btn-ghost" onclick="triggerFileInput()">
+              🖼️ Upload from Gallery
+            </button>
+          </div>
+          <input type="file" id="file-input" accept="image/*" style="display:none" onchange="handleFileSelect(event)"/>
+          <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none" onchange="handleFileSelect(event)"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS ROW -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">📊 Summary</div>
+      </div>
+      <div class="grid-4">
+        <div class="stat-chip">
+          <div class="stat-chip-label">Total Items</div>
+          <div class="stat-chip-value" id="stat-total">—</div>
+          <div class="stat-chip-sub">from last scan</div>
+        </div>
+        <div class="stat-chip green">
+          <div class="stat-chip-label">Healthy Items</div>
+          <div class="stat-chip-value" id="stat-healthy">—</div>
+          <div class="stat-chip-sub">nutritious foods</div>
+        </div>
+        <div class="stat-chip red">
+          <div class="stat-chip-label">Processed Items</div>
+          <div class="stat-chip-value" id="stat-processed">—</div>
+          <div class="stat-chip-sub">junk / ultra-processed</div>
+        </div>
+        <div class="stat-chip gold">
+          <div class="stat-chip-label">Health Score</div>
+          <div class="stat-chip-value" id="stat-score">—</div>
+          <div class="stat-chip-sub">% nutritious</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN DASHBOARD GRID -->
+    <div class="grid-2 section">
+
+      <!-- HEALTH ANALYSIS -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">💚 Health Analysis</div>
+            <div class="card-subtitle">Food classification breakdown</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="health-empty" class="empty-state">
+            <div class="empty-icon">🥦</div>
+            <div class="empty-title">No scans yet</div>
+            <div class="empty-sub">Upload a grocery receipt above to see your health breakdown and nutritional insights.</div>
+          </div>
+          <div id="health-data" style="display:none">
+            <div class="health-ring-wrap">
+              <div class="ring-canvas-wrap" style="width:130px;height:130px">
+                <canvas id="donut-chart" width="130" height="130"></canvas>
+                <div class="ring-center">
+                  <div class="ring-score" id="ring-score">0%</div>
+                  <div class="ring-label">healthy</div>
+                </div>
+              </div>
+              <div class="ring-legend">
+                <div class="legend-item">
+                  <div class="legend-dot" style="background:var(--green)"></div>
+                  <div class="legend-text">🟢 Healthy / Nutritious</div>
+                  <div class="legend-count" style="color:var(--green)" id="leg-healthy">0</div>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot" style="background:var(--red)"></div>
+                  <div class="legend-text">🔴 Processed / Junk</div>
+                  <div class="legend-count" style="color:var(--red)" id="leg-processed">0</div>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot" style="background:var(--blue)"></div>
+                  <div class="legend-text">🔵 Non-Food</div>
+                  <div class="legend-count" style="color:var(--blue)" id="leg-nonfood">0</div>
+                </div>
+              </div>
+            </div>
+            <div class="progress-wrap" style="margin-top:20px">
+              <div class="progress-label">
+                <span>Health Progress</span>
+                <span id="prog-pct">0%</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" id="prog-fill" style="width:0%;background:linear-gradient(90deg,var(--green),#a3e635)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MONTHLY SPEND -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">💰 Monthly Spend</div>
+            <div class="card-subtitle">Grocery expenditure tracker</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="spend-total">
+            <span class="spend-currency">PKR</span>
+            <span id="spend-total">0</span>
+          </div>
+          <div class="spend-trend">
+            <span class="trend-pill" id="trend-pill">—</span>
+            <span id="trend-text">No data yet</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="line-chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ITEMS LIST -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">🛒 Scanned Items</div>
+        <div id="items-count" style="font-size:12px;color:var(--text-muted)"></div>
+      </div>
+      <div class="card">
+        <div class="card-body" style="padding:16px">
+          <div id="items-empty" class="empty-state" style="padding:40px 24px">
+            <div class="empty-icon">🛒</div>
+            <div class="empty-title">Cart is empty</div>
+            <div class="empty-sub">Your scanned items will appear here with health classifications and prices in PKR.</div>
+          </div>
+          <div class="item-list" id="items-list" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM PREMIUM CARD -->
+    <div class="section">
+      <div class="card" style="background:linear-gradient(135deg,rgba(20,16,8,0.95),rgba(14,12,4,0.95));border-color:rgba(212,175,55,0.25)">
+        <div class="card-body" style="padding:28px;display:flex;align-items:center;gap:24px">
+          <div style="font-size:44px;filter:drop-shadow(0 0 16px rgba(212,175,55,0.5))">👑</div>
+          <div style="flex:1">
+            <div style="font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--gold2);margin-bottom:6px">Unlock Unlimited Scans</div>
+            <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Upgrade to Premium for <strong style="color:var(--gold1)">Rs. 2,000/month</strong> and track every receipt, every day — with advanced AI insights and full history.</div>
+          </div>
+          <button class="btn-premium" style="width:auto;padding:13px 28px;animation:pulse-gold 2.5s ease-in-out infinite" onclick="openPremiumModal()">
+            ✦ Get Unlimited Scans
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page -->
+</div><!-- /main -->
+
+<!-- LOADING OVERLAY -->
+<div class="loader-overlay" id="loader">
+  <div class="loader-ring"></div>
+  <div class="loader-text">Analysing with AI…</div>
+  <div class="loader-sub">Extracting items and classifying nutrition</div>
+</div>
+
+<!-- PREMIUM MODAL -->
+<div class="modal-backdrop" id="premium-modal">
+  <div class="modal">
+    <div class="modal-top">
+      <div class="modal-crown">👑</div>
+      <div class="modal-title">Elevate Your Health Journey</div>
+      <div class="modal-msg">You've used your free scan for this month. Upgrade to Premium and get unlimited AI-powered receipt scanning, deep nutritional insights, and full spending history.</div>
+    </div>
+    <div class="modal-price-block">
+      <div class="modal-price-label">PREMIUM PLAN</div>
+      <div class="modal-price">Rs. 2,000 <span style="font-size:16px;color:var(--text-muted)">/month</span></div>
+      <div class="modal-price-sub">All taxes included · Cancel anytime</div>
+    </div>
+    <div class="modal-bottom">
+      <div class="modal-features">
+        <div class="modal-feat"><span class="feat-check">✓</span> Unlimited receipt scans per month</div>
+        <div class="modal-feat"><span class="feat-check">✓</span> Advanced AI nutritional analysis</div>
+        <div class="modal-feat"><span class="feat-check">✓</span> Full spending history &amp; trends</div>
+        <div class="modal-feat"><span class="feat-check">✓</span> Personalised health recommendations</div>
+        <div class="modal-feat"><span class="feat-check">✓</span> Priority support</div>
+      </div>
+      <a class="btn-premium" href="https://www.instagram.com/ayezaazhar_08?igsh=MWlhdDh5ZmFvdTdlcQ==" target="_blank" rel="noopener">
+        ✦ Get Unlimited Scans
+      </a>
+      <div class="modal-dismiss" onclick="closePremiumModal()">Maybe later</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   SERVICE LAYER
+══════════════════════════════════════════════════════════ */
+
+// ── utils/healthClassifier.ts ──
+const HEALTHY_KEYWORDS = [
+  'apple','banana','orange','mango','grape','strawberry','blueberry','lemon','lime',
+  'pear','peach','plum','cherry','watermelon','melon','pineapple','papaya','guava',
+  'milk','yogurt','yoghurt','dahi','cheese','paneer','egg','eggs',
+  'spinach','tomato','potato','onion','garlic','ginger','carrot','broccoli','cucumber',
+  'lettuce','cabbage','cauliflower','peas','beans','lentil','daal','dal','mung','chickpea',
+  'chana','rice','atta','flour','bread','roti','paratha','oats','oatmeal',
+  'chicken','beef','mutton','fish','salmon','tuna','shrimp','meat',
+  'almond','walnut','cashew','pistachio','nuts','seed','sesame','flaxseed',
+  'olive oil','canola oil','coconut oil','ghee',
+  'water','green tea','herbal','juice','honey','turmeric','cinnamon',
+  'tofu','soy','quinoa','barley','whole wheat','organic','fresh',
+];
+
+const PROCESSED_KEYWORDS = [
+  'chips','crisps','namkeen','kurkure','biscuit','cookie','cracker','wafer',
+  'chocolate','candy','sweet','lollipop','toffee','mithai','jalebi',
+  'cola','pepsi','coke','sprite','fanta','mountain dew','soda','fizzy','energy drink',
+  'pizza','burger','hotdog','nugget','instant','noodle','maggi','ramen',
+  'ketchup','mayonnaise','sauce','pickle','jam','jelly','spread',
+  'ice cream','frozen','fried','snack','packaged','processed',
+  'doughnut','donut','cake','pastry','muffin','brownie',
+  'sausage','salami','deli','canned','tinned',
+];
+
+const NON_FOOD_KEYWORDS = [
+  'shampoo','soap','detergent','tissue','toilet','diapers','nappy','baby wipes',
+  'pen','pencil','notebook','book','stationery','copy','rubber','eraser',
+  'bleach','cleaner','dishwash','laundry','fabric','softener',
+  'toothpaste','toothbrush','brush','comb','deodorant','perfume','lotion','cream',
+  'battery','bulb','candle','bag','plastic','aluminium','foil',
+  'school','office','tape','glue','scissor','staple',
+];
+
+function classifyItem(name) {
+  const n = name.toLowerCase();
+  for (const k of NON_FOOD_KEYWORDS) if (n.includes(k)) return 'non-food';
+  for (const k of PROCESSED_KEYWORDS) if (n.includes(k)) return 'processed';
+  for (const k of HEALTHY_KEYWORDS) if (n.includes(k)) return 'healthy';
+  // Default food items to healthy if unrecognized but looks food-like
+  return 'healthy';
+}
+
+// ── utils/receiptParser.ts ──
+function parseReceiptText(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const items = [];
+  const priceRegex = /(?:PKR|Rs\.?|₨|RS)?\s*(\d{1,5}(?:[.,]\d{2})?)/i;
+  const qtyRegex = /^(\d+)\s*[xX×]\s*/;
+
+  for (const line of lines) {
+    if (/total|subtotal|tax|vat|gst|change|cash|card|amount|receipt|bill|date|time|thank|welcome|invoice/i.test(line)) continue;
+    const priceMatch = line.match(priceRegex);
+    if (!priceMatch) continue;
+    const price = parseFloat(priceMatch[1].replace(',',''));
+    if (price < 1 || price > 99999) continue;
+    let name = line.replace(priceRegex, '').trim().replace(/[.\-_]+$/, '').trim();
+    let qty = 1;
+    const qm = name.match(qtyRegex);
+    if (qm) { qty = parseInt(qm[1]); name = name.replace(qtyRegex, '').trim(); }
+    if (name.length < 2) continue;
+    items.push({ name, price, qty, category: classifyItem(name) });
+  }
+  return items;
+}
+
+// ── services/gemini.ts ──
+async function analyzeReceiptWithGemini(imageBase64, mimeType) {
+  const GEMINI_API_KEY = typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : null;
+  if (!GEMINI_API_KEY) {
+    // Fallback: use demo items if no API key
+    return null;
+  }
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  const prompt = `You are a grocery receipt parser. Analyse this receipt image and extract ALL items.
+Return a JSON array only (no markdown, no explanation) with objects:
+{"name":"item name","price":123,"qty":1}
+Rules:
+- Include ALL items (food, household, school, baby items)
+- Price in PKR (numeric only)
+- If price unclear use 0
+- name should be clean product name`;
+
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{
+        parts: [
+          { text: prompt },
+          { inline_data: { mime_type: mimeType, data: imageBase64 } }
+        ]
+      }]
+    })
+  });
+  if (!resp.ok) return null;
+  const data = await resp.json();
+  const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  try {
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const arr = JSON.parse(clean);
+    return arr.map(i => ({ ...i, category: classifyItem(i.name) }));
+  } catch { return null; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   STORE — useAppStore.ts
+══════════════════════════════════════════════════════════ */
+const Store = {
+  _data: {
+    scansThisMonth: 0,
+    scanMonth: '',
+    currentItems: [],
+    monthlyTotals: [],
+    currentTotal: 0,
+  },
+  load() {
+    try {
+      const saved = localStorage.getItem('nutricheck_store');
+      if (saved) this._data = { ...this._data, ...JSON.parse(saved) };
+    } catch {}
+  },
+  save() {
+    try { localStorage.setItem('nutricheck_store', JSON.stringify(this._data)); } catch {}
+  },
+  get() { return this._data; },
+  canScan() {
+    const now = new Date();
+    const m = `${now.getFullYear()}-${now.getMonth()}`;
+    if (this._data.scanMonth !== m) {
+      this._data.scanMonth = m;
+      this._data.scansThisMonth = 0;
+      this.save();
+    }
+    return this._data.scansThisMonth < 1;
+  },
+  recordScan(items, total) {
+    this._data.scansThisMonth++;
+    this._data.currentItems = items;
+    this._data.currentTotal = total;
+    const mo = new Date().toLocaleString('default', { month: 'short' });
+    const existing = this._data.monthlyTotals.find(t => t.month === mo);
+    if (existing) existing.amount += total;
+    else this._data.monthlyTotals.push({ month: mo, amount: total });
+    if (this._data.monthlyTotals.length > 6) this._data.monthlyTotals.shift();
+    this.save();
+  }
+};
+
+/* ══════════════════════════════════════════════════════════
+   CHARTS
+══════════════════════════════════════════════════════════ */
+let donutChart = null;
+let lineChart = null;
+
+function initLineChart() {
+  const ctx = document.getElementById('line-chart').getContext('2d');
+  const data = Store.get().monthlyTotals;
+  const labels = data.length ? data.map(d => d.month) : ['Jan','Feb','Mar','Apr','May','Jun'];
+  const values = data.length ? data.map(d => d.amount) : [0,0,0,0,0,0];
+  if (lineChart) lineChart.destroy();
+  lineChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        borderColor: '#d4af37',
+        backgroundColor: (ctx) => {
+          const g = ctx.chart.ctx.createLinearGradient(0,0,0,160);
+          g.addColorStop(0,'rgba(212,175,55,0.2)');
+          g.addColorStop(1,'rgba(212,175,55,0)');
+          return g;
+        },
+        borderWidth: 2,
+        pointBackgroundColor: '#d4af37',
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        tension: 0.4,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        backgroundColor: 'rgba(18,18,28,0.95)',
+        borderColor: 'rgba(212,175,55,0.3)',
+        borderWidth: 1,
+        titleColor: '#f0ede6',
+        bodyColor: '#d4af37',
+        callbacks: { label: ctx => `PKR ${ctx.raw.toLocaleString()}` }
+      }},
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5a5856', font: { size: 11 } } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5a5856', font: { size: 11 }, callback: v => `PKR ${v.toLocaleString()}` } }
+      }
+    }
+  });
+}
+
+function updateDonutChart(healthy, processed, nonfood) {
+  const ctx = document.getElementById('donut-chart').getContext('2d');
+  if (donutChart) donutChart.destroy();
+  donutChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      datasets: [{
+        data: [healthy, processed, nonfood || 0.001],
+        backgroundColor: ['#34d399','#f87171','#60a5fa'],
+        borderColor: ['rgba(52,211,153,0.5)','rgba(248,113,113,0.5)','rgba(96,165,250,0.5)'],
+        borderWidth: 2,
+        hoverOffset: 4,
+      }]
+    },
+    options: {
+      responsive: false,
+      cutout: '72%',
+      plugins: { legend: { display: false }, tooltip: {
+        backgroundColor: 'rgba(18,18,28,0.95)',
+        borderColor: 'rgba(212,175,55,0.3)',
+        borderWidth: 1,
+        titleColor: '#f0ede6',
+        bodyColor: '#9b9894',
+      }}
+    }
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   UI UPDATES
+══════════════════════════════════════════════════════════ */
+function updateScanCounter() {
+  const can = Store.canScan();
+  const dot = document.getElementById('scan-dot');
+  const txt = document.getElementById('scan-counter-text');
+  dot.className = 'scan-dot' + (can ? '' : ' used');
+  txt.textContent = can ? '1 scan available' : 'Scan used this month';
+}
+
+function renderItems(items) {
+  const list = document.getElementById('items-list');
+  const empty = document.getElementById('items-empty');
+  const count = document.getElementById('items-count');
+  list.innerHTML = '';
+  if (!items.length) {
+    empty.style.display = ''; list.style.display = 'none'; return;
+  }
+  empty.style.display = 'none'; list.style.display = '';
+  count.textContent = `${items.length} items`;
+  items.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    row.innerHTML = `
+      <div class="item-badge ${item.category}"></div>
+      <div class="item-name">${item.name}</div>
+      <div class="item-qty">×${item.qty}</div>
+      <div class="item-tag ${item.category}">${item.category === 'healthy' ? '🟢 Healthy' : item.category === 'processed' ? '🔴 Processed' : '🔵 Non-Food'}</div>
+      <div class="item-price">PKR ${(item.price * item.qty).toLocaleString()}</div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function renderHealthData(items) {
+  const foodItems = items.filter(i => i.category !== 'non-food');
+  const healthy = items.filter(i => i.category === 'healthy').length;
+  const processed = items.filter(i => i.category === 'processed').length;
+  const nonfood = items.filter(i => i.category === 'non-food').length;
+  const pct = foodItems.length ? Math.round((healthy / foodItems.length) * 100) : 0;
+
+  document.getElementById('stat-total').textContent = items.length;
+  document.getElementById('stat-healthy').textContent = healthy;
+  document.getElementById('stat-processed').textContent = processed;
+  document.getElementById('stat-score').textContent = pct + '%';
+  document.getElementById('health-empty').style.display = 'none';
+  document.getElementById('health-data').style.display = '';
+  document.getElementById('ring-score').textContent = pct + '%';
+  document.getElementById('leg-healthy').textContent = healthy;
+  document.getElementById('leg-processed').textContent = processed;
+  document.getElementById('leg-nonfood').textContent = nonfood;
+  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('prog-fill').style.width = pct + '%';
+  updateDonutChart(healthy || 0.001, processed || 0.001, nonfood || 0.001);
+}
+
+function renderSpend(total) {
+  const d = Store.get();
+  const monthly = d.monthlyTotals;
+  document.getElementById('spend-total').textContent = total.toLocaleString();
+  const pill = document.getElementById('trend-pill');
+  const txt = document.getElementById('trend-text');
+  if (monthly.length >= 2) {
+    const last = monthly[monthly.length-1].amount;
+    const prev = monthly[monthly.length-2].amount;
+    const diff = last - prev;
+    const pct = prev ? Math.abs(Math.round((diff/prev)*100)) : 0;
+    if (diff > 0) {
+      pill.textContent = `+${pct}%`;
+      pill.className = 'trend-pill up';
+      txt.textContent = 'vs last month';
+    } else {
+      pill.textContent = `-${pct}%`;
+      pill.className = 'trend-pill down';
+      txt.textContent = 'vs last month';
+    }
+  } else {
+    pill.textContent = 'This month';
+    pill.className = 'trend-pill';
+    txt.textContent = 'First scan recorded';
+  }
+  initLineChart();
+}
+
+/* ══════════════════════════════════════════════════════════
+   SCAN FLOW
+══════════════════════════════════════════════════════════ */
+function showLoader(show) {
+  document.getElementById('loader').classList.toggle('visible', show);
+}
+function showError(msg) {
+  document.getElementById('error-banner').classList.add('visible');
+  document.getElementById('error-msg').textContent = msg;
+  document.getElementById('success-banner').classList.remove('visible');
+}
+function showSuccess(msg) {
+  document.getElementById('success-banner').classList.add('visible');
+  document.getElementById('success-msg').textContent = msg;
+  document.getElementById('error-banner').classList.remove('visible');
+}
+function hideAlerts() {
+  document.getElementById('error-banner').classList.remove('visible');
+  document.getElementById('success-banner').classList.remove('visible');
+}
+
+async function processScan(imageBase64, mimeType) {
+  hideAlerts();
+  if (!Store.canScan()) {
+    openPremiumModal();
+    return;
+  }
+  showLoader(true);
+  try {
+    let items = await analyzeReceiptWithGemini(imageBase64, mimeType);
+    if (!items) {
+      // Simulate processing delay for demo feel
+      await new Promise(r => setTimeout(r, 1800));
+      // Fallback: parse uploaded image name or use simulated data
+      items = generateSimulatedItems();
+    }
+    const foodItems = items.filter(i => i.category !== 'non-food');
+    if (foodItems.length === 0) {
+      showLoader(false);
+      showError('Invalid Document: Please upload a grocery or food-related receipt to get health insights.');
+      return;
+    }
+    const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+    Store.recordScan(items, total);
+    renderItems(items);
+    renderHealthData(items);
+    renderSpend(total);
+    updateScanCounter();
+    showSuccess(`${items.length} items extracted · ${foodItems.length} food items classified`);
+  } catch (e) {
+    showError('Analysis failed. Please try again or use the demo scan.');
+  } finally {
+    showLoader(false);
+  }
+}
+
+function generateSimulatedItems() {
+  return [
+    { name: 'Fresh Milk 1L', price: 180, qty: 2, category: 'healthy' },
+    { name: 'Whole Wheat Bread', price: 120, qty: 1, category: 'healthy' },
+    { name: 'Basmati Rice 1kg', price: 280, qty: 1, category: 'healthy' },
+    { name: 'Chicken Breast 500g', price: 420, qty: 1, category: 'healthy' },
+    { name: 'Spinach Fresh', price: 60, qty: 2, category: 'healthy' },
+    { name: 'Tomatoes 1kg', price: 80, qty: 1, category: 'healthy' },
+    { name: 'Dahi 400g', price: 90, qty: 2, category: 'healthy' },
+    { name: 'Banana Dozen', price: 120, qty: 1, category: 'healthy' },
+    { name: 'Lays Chips BBQ', price: 80, qty: 3, category: 'processed' },
+    { name: 'Pepsi 1.5L', price: 120, qty: 2, category: 'processed' },
+    { name: 'Oreo Cookies', price: 95, qty: 1, category: 'processed' },
+    { name: 'Maggi Noodles', price: 55, qty: 4, category: 'processed' },
+    { name: 'Shampoo 200ml', price: 250, qty: 1, category: 'non-food' },
+    { name: 'Dishwash Liquid', price: 130, qty: 1, category: 'non-food' },
+    { name: 'Notebook A4', price: 90, qty: 2, category: 'non-food' },
+  ];
+}
+
+/* ══════════════════════════════════════════════════════════
+   FILE HANDLING
+══════════════════════════════════════════════════════════ */
+function triggerFileInput() { document.getElementById('file-input').click(); }
+function triggerCamera() { document.getElementById('camera-input').click(); }
+
+function handleFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    // Show preview
+    document.getElementById('preview-img').src = dataUrl;
+    document.getElementById('preview-container').style.display = '';
+    // Extract base64
+    const b64 = dataUrl.split(',')[1];
+    processScan(b64, file.type);
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleDrag(e, entering) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.toggle('dragging', entering);
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('dragging');
+  const file = e.dataTransfer.files[0];
+  if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('preview-img').src = ev.target.result;
+    document.getElementById('preview-container').style.display = '';
+    processScan(ev.target.result.split(',')[1], file.type);
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ══════════════════════════════════════════════════════════
+   DEMO SCAN
+══════════════════════════════════════════════════════════ */
+async function runDemo() {
+  hideAlerts();
+  // Check scan limit
+  if (!Store.canScan()) {
+    openPremiumModal();
+    return;
+  }
+  showLoader(true);
+  await new Promise(r => setTimeout(r, 2000));
+  const items = generateSimulatedItems();
+  const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+  Store.recordScan(items, total);
+  renderItems(items);
+  renderHealthData(items);
+  renderSpend(total);
+  updateScanCounter();
+  showSuccess(`Demo scan complete · ${items.length} items classified`);
+  showLoader(false);
+}
+
+/* ══════════════════════════════════════════════════════════
+   PREMIUM MODAL
+══════════════════════════════════════════════════════════ */
+function openPremiumModal() {
+  document.getElementById('premium-modal').classList.add('visible');
+}
+function closePremiumModal() {
+  document.getElementById('premium-modal').classList.remove('visible');
+}
+document.getElementById('premium-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('premium-modal')) closePremiumModal();
+});
+
+/* ══════════════════════════════════════════════════════════
+   NAV
+══════════════════════════════════════════════════════════ */
+function setPage(page) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  // All content is on one page; scroll to relevant section
+  const map = {
+    dashboard: '.header',
+    scan: '.scan-zone',
+    health: '#health-data',
+    spend: '.spend-total',
+    history: '#items-list',
+  };
+  const target = document.querySelector(map[page]);
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ══════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════ */
+Store.load();
+updateScanCounter();
+initLineChart();
+// Restore previous data if exists
+const d = Store.get();
+if (d.currentItems && d.currentItems.length) {
+  renderItems(d.currentItems);
+  renderHealthData(d.currentItems);
+  renderSpend(d.currentTotal || 0);
+}
+</script>
+</body>
+</html>
